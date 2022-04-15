@@ -1,0 +1,20 @@
+.report{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-bottom: 25%;
+}
+
+.download-report{
+    height: 35px;
+    border:0;
+    border-radius: 7px;
+    background-color: #181C2E;
+    color: #FFF;
+    font-size: 1.3em;
+    width: 400px;
+    margin-top: 2%;
+}

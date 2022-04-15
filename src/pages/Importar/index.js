@@ -1,40 +1,42 @@
-import './importar.css';
 import React, {useState} from 'react';
+import './importar.css';
 import Title from '../../components/Title';
 import {  FiUpload } from 'react-icons/fi';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
 export default function Importar() {
+    const navigate = useNavigate();
     const [selectedFile, setSelectedFile] = useState();
-    const [isSelected, setIsSelected] = useState(false);
 
     const changeHandler = (e) => {
 		setSelectedFile(e.target.files[0]);
-		setIsSelected(true);
 	};
 
     function handleSave(e){
         e.preventDefault();
-        console.log("aqui 1");
-        console.log(selectedFile);
+
         if( selectedFile.type === "text/csv"){
-            console.log("aqui 2");
-            //envia para a api
             const formData = new FormData();
             formData.append('File', selectedFile);
 
             fetch(
-                'https://localhost:7080/api/filme/import',
+                `${api.defaults.baseURL}filme/import`,
                 {
                     method: 'POST',
                     body: formData,
                 }
             ).then((response) => response.json())
             .then((result) => {
-                    console.log('Success:', result);
+                    toast.success('Arquivo importado com sucesso!');
+                    navigate("/filmes");
                 })
             .catch((error) => {
-                    console.error('Error:', error);
+                    toast.error('Não foi possivel importar o arquivo!');
                 });            
+        }else{
+            toast.warning('Arquivo tem que ser do tipo .csv');
         }
     };
 

@@ -1,4 +1,5 @@
 import {Route, Routes} from 'react-router-dom';
+import React from 'react';
 import Home from '../pages/Home';
 import Filmes from '../pages/Filmes';
 import Clientes from '../pages/Clientes';
@@ -6,6 +7,7 @@ import ClientesAdd from '../pages/ClientesAdd';
 import Locacaoes from '../pages/Locacoes';
 import LocacoesAdd from '../pages/LocacoesAdd';
 import Importar from '../pages/Importar';
+import Relatorios from '../pages/Relatorios';
 
 
 export default function Router(){
@@ -20,6 +22,7 @@ export default function Router(){
             <Route exact path="/cliente-add/:id" element={<ClientesAdd/>}/>
             <Route exact path="/locacoes-add" element={<LocacoesAdd/>}/>
             <Route exact path="/locacoes-add/:id" element={<LocacoesAdd/>}/>
+            <Route exact path="/relatorios" element={<Relatorios/>}/>
         </Routes>
     )
 }

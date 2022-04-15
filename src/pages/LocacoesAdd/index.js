@@ -1,43 +1,41 @@
+import React, { Fragment } from 'react';
 import './locacoesadd.css'
+import "react-datepicker/dist/react-datepicker.css";
 import Title from '../../components/Title';
-import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import DatePicker from "react-datepicker";
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FiPlus } from 'react-icons/fi';
+import { toast } from 'react-toastify';
 
 function LocacoesAdd(){
+    const {id} = useParams();
+    const navigate = useNavigate();
     const [loadClientes, setLoadClientes] = useState(true);
     const[clientes, setClientes] = useState([]);
     const [clienteSelected, setClienteSelected] = useState(0);
 
     const [loadFilmes, setLoadFilmes] = useState(true);
-    const[filmes, setFilmes] = useState('');
+    const[filmes, setFilmes] = useState([]);
     const [filmeSelected, setFilmeSelected] = useState(0);
 
-    const[dataLocacao, setDataLocacao] = useState('');
+    const[dataLocacao, setDataLocacao] = useState(new Date());
+    const[dataDevolucao, setDataDevolucao] = useState(new Date());
 
-    useEffect(() => {
-        function loadClientes(){
-            api.get('cliente')
-            .then((snapshot)=> {
-                
-                let listaClientes = [];
-              
+    useEffect(() => {        
+
+        async function loadClientes(){
+            await api.get('cliente')
+            .then((snapshot)=> {             
+                let listaClientes = []; 
                 snapshot.data.forEach((doc) => {
                     listaClientes.push({
                         id: doc.id,
                         nome: doc.nome
                     })
                 })
-
-                if(listaClientes.length === 0){
-                    console.log('Nenhum cliente encontrado!');
-                    setClientes([{id: '0', nome: ''}]);
-                    setLoadClientes(false);
-                    return;
-                }
-
-                setClientes(listaClientes);
-                setLoadClientes(false);
+                SetaListaCliente(listaClientes);                
 
             })
             .catch((error) =>{
@@ -48,12 +46,10 @@ function LocacoesAdd(){
             })
         }
 
-        function loadFilmes(){
-            api.get('filme')
+        async function loadFilmes(){
+            await api.get('filme')
             .then((snapshot)=>{
-                
                 let listaFilmes = [];
-              
                 snapshot.data.forEach((doc) => {
                     listaFilmes.push({
                         id: doc.id,
@@ -67,43 +63,87 @@ function LocacoesAdd(){
                     setLoadFilmes(false);
                     return;
                 }
-                console.log(listaFilmes);
                 setFilmes(listaFilmes);
-                setLoadFilmes(false);
-                return;
+                setLoadFilmes(false);                
             })
             .catch((error) =>{
-                console.log('Deu erro ao buscar filmes!');
+                console.log('Ocorreu um erro ao buscar filmes!');
                 console.log(error);
                 setLoadFilmes(false);
                 setFilmes([{id: '0', titulo: ''}]);
             })
         }        
         
+        
+
         loadClientes();
-        loadFilmes();        
-    },[])
+        loadFilmes();   
+
+        // if(id){
+        //     loadInformations(listaClientes, listaFilmes);
+        // }
+
+    },[id])
+
+    function SetaListaCliente(listaClientes){
+        if(listaClientes.length === 0){
+            console.log('Nenhum cliente encontrado!');
+            setClientes([{id: '0', nome: ''}]);
+            setLoadClientes(false);
+            return;
+        }
+
+        setClientes(listaClientes);
+        setLoadClientes(false);
+    }
+    
+
+    async function loadInformations(listaClientes, listaFilmes) {
+        await api.get(`locacao/${id}`)
+        .then((snapshot) => {
+            setDataLocacao(new Date(snapshot.data.dataLocacao));
+            let indexCliente = listaClientes.findIndex(item => item.id === snapshot.data.id_Cliente);
+            let indexFilmes = listaFilmes.findIndex(item => item.id === snapshot.data.id_Filme);
+            debugger;
+            setClienteSelected(indexCliente);
+            setFilmeSelected(indexFilmes);
+        })
+        .catch((error) => {
+            console.log('Erro: ' + error);
+        });
+    }
 
     function handleAdd(e){
-        e.preventDefault();        
-            const response = api.post(`locacao`,{
-                id_Cliente: clientes[clienteSelected].id,
-                id_Filme: filmes[filmeSelected].id,
-                dataLocacao: dataLocacao,
-                dataDevolucao: null
-            }).then(function (response) {
-                console.log(response);
-            }).catch(function (error) {
-                console.log(error);
-            });        
-    }
-
-    function handleChangeCliente(e){
-        setFilmeSelected(e.target.value);
-    }
-
-    function handleChangeFilme(e){
-        setClienteSelected(e.target.value);
+        e.preventDefault();
+        if(clienteSelected !== 0 && filmeSelected !== 0 && dataLocacao !== ''){
+            if(id){
+                api.put(`locacao?id=${id}`,{
+                    id_Cliente: clientes[clienteSelected].id,
+                    id_Filme: filmes[filmeSelected].id,
+                    dataLocacao: dataLocacao,
+                    dataDevolucao: dataDevolucao
+                }).then(function (response) {
+                    toast.success('Locação editada com sucesso!');
+                    navigate('/locacoes');
+                }).catch(function (error) {
+                    console.log(error);
+                    toast.error('Houve um erro ao editar a locação!');
+                });
+            }else{
+                api.post(`locacao`,{
+                    id_Cliente: clientes[clienteSelected].id,
+                    id_Filme: filmes[filmeSelected].id,
+                    dataLocacao: dataLocacao
+                }).then(function (response) {
+                    toast.success('Locação cadastrada com sucesso!');
+                    navigate('/locacoes');
+                }).catch(function (error) {
+                    console.log(error);
+                    toast.error('Houve um erro ao cadastrar a locação!');
+                });
+            }
+            
+        }
     }
 
     return(
@@ -115,23 +155,40 @@ function LocacoesAdd(){
                 <div className='container'>
                     <form className='form-profile' onSubmit={handleAdd}>
                         <label>Cliente</label>
-                        <select value={clienteSelected} onChange={handleChangeCliente}>
-                            {clientes.map((item, index) => {
-                                return(
-                                    <option key={item.id} value={index}>{item.nome}</option>
-                                )
-                            })}
-                        </select>
+                        {loadClientes?(
+                            <input type="text" disabled={true} value="Carregando clientes..."/>
+                        ):(
+                            <select value={clienteSelected} onChange={(e) => {setClienteSelected(e.target.value)}}>
+                                <option key={0} value={0}>Selecione um cliente</option>
+                                {clientes.map((item, index) => {
+                                    return(
+                                        <option key={item.id} value={index}>{item.nome}</option>
+                                    )
+                                })}
+                            </select>
+                        )}                        
                         <label>Filme</label>
-                        <select value={filmeSelected} onChange={handleChangeFilme}>
-                            {filmes.map((item, index) => {
-                                return(
-                                    <option key={item.id} value={index}>{item.titulo}</option>
-                                )
-                            })}
-                        </select>
+                        {loadFilmes?(
+                            <input type="text" disabled={true} value="Carregando filmes..."/>
+                        ):(
+                            <select value={filmeSelected} onChange={(e) => {setFilmeSelected(e.target.value)}}>
+                                <option key={0} value={0}>Selecione um filme</option>
+                                {filmes.map((item, index) => {
+                                    return(
+                                        <option key={item.id} value={index}>{item.titulo}</option>
+                                    )
+                                })}
+                            </select>
+                        )
+
+                        }
+                        
                         <label>Data Locação</label>
-                        <input type="text" value={dataLocacao} onChange={(e) => setDataLocacao(e.target.value)} placeholder="Data de Nascimento"/>
+                        <DatePicker dateFormat="dd/MM/yyyy" selected={dataLocacao} onChange={(date) => setDataLocacao(date)} />
+                        {id ? <label>Data Locação</label> : <Fragment></Fragment>}
+                        {id ? <DatePicker dateFormat="dd/MM/yyyy" selected={dataDevolucao} onChange={(date) => setDataDevolucao(date)} />
+                        : <Fragment></Fragment>}
+
                         <button type="submit">Salvar</button>
                     </form>
                 </div>

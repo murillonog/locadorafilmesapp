@@ -1,7 +1,7 @@
 import './home.css';
-import React, {useState} from 'react';
+import React from 'react';
 import Title from '../../components/Title';
-import { FiHome, FiUser, FiUpload } from 'react-icons/fi';
+import { FiHome } from 'react-icons/fi';
 
 export default function Home() {
     return (

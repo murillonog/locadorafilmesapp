@@ -1,22 +1,15 @@
 import './filme.css';
 import Title from '../../components/Title';
-import { FiEdit2, FiPlus, FiTrash } from 'react-icons/fi';
+import React from 'react';
+import { FiPlus } from 'react-icons/fi';
 import { BiCameraMovie } from 'react-icons/bi';
 import {Link} from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import api from '../../services/api';
 
 function Filmes() {
   const [listaFilmes, setListaFimes] = useState([1]);
   const [loadFilmes, setLoadFilmes] = useState(true);
-
-  function toggleDeleteItem(){
-
-  }
-
-  function toggleEditModal(){
-
-  }
 
   useEffect(() => {
     async function loadFilmes(){
@@ -70,7 +63,7 @@ function Filmes() {
             </Link>
           </div>
           ) : (
-            <>
+            <Fragment>
             <Link to="/importar" className="new">
               <FiPlus size={25} color="#FFF"/>
               Importar Arquivo
@@ -100,7 +93,7 @@ function Filmes() {
                 
               </tbody>
             </table>
-            </>
+            </Fragment>
           )}
 
           

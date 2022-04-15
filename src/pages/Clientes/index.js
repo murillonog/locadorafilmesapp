@@ -1,16 +1,25 @@
 import './clientes.css';
+import React from 'react';
 import Title from '../../components/Title';
 import { FiUser, FiEdit2, FiPlus, FiTrash } from 'react-icons/fi';
 import {Link} from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import api from '../../services/api';
+import { toast } from 'react-toastify';
 
 function Clientes() {
   const [listaClientes, setListaClientes] = useState([]);
   const [loadClientes, setLoadClientes] = useState(true);
 
-  function toggleDeleteItem(id){
-
+  function toggleDeleteItem(idItem){
+    api.delete(`cliente?id=${idItem}`)
+    .then(function (response) {
+      console.log(response);
+      toast.success("Cliente deletado com sucesso!");
+      window.location.reload();
+    }).catch(function (error) {
+        console.log(error);
+    });
   }
 
   useEffect(() => {
@@ -64,7 +73,7 @@ function Clientes() {
             </Link>
           </div>
           ) : (
-            <>
+            <Fragment>
             <Link to="/cliente-add" className="new">
               <FiPlus size={25} color="#FFF"/>
               Adicionar Cliente
@@ -104,7 +113,7 @@ function Clientes() {
                 
               </tbody>
             </table>
-            </>
+            </Fragment>
           )}
 
           
